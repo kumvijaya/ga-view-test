@@ -3,6 +3,8 @@
 from apiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 import argparse
+import pandas as pd
+from pandas import json_normalize
 
 parser = argparse.ArgumentParser(
     description="""
@@ -30,10 +32,6 @@ args = parser.parse_args()
 KEY_FILE_LOCATION = args.credfile
 VIEW_ID = args.view
 SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']
-# KEY_FILE_LOCATION = os.environ['KEY_FILE_LOCATION']
-#  = '63948351'
-
-# 'test1-220411-012a8f5cb465.json'
 
 
 def initialize_analyticsreporting():
@@ -72,6 +70,25 @@ def get_report(analytics):
   ).execute()
 
 
+def parse_data(response):
+
+  reports = response['reports'][0]
+  columnHeader = reports['columnHeader']['dimensions']
+  metricHeader = reports['columnHeader']['metricHeader']['metricHeaderEntries']
+
+  columns = columnHeader
+  for metric in metricHeader:
+    columns.append(metric['name'])
+
+  data = json_normalize(reports['data']['rows'])
+  data_dimensions = pd.DataFrame(data['dimensions'].tolist())
+  data_metrics = pd.DataFrame(data['metrics'].tolist())
+  data_metrics = data_metrics.applymap(lambda x: x['values'])
+  data_metrics = pd.DataFrame(data_metrics[0].tolist())
+  result = pd.concat([data_dimensions, data_metrics], axis=1, ignore_index=True)
+
+  return result
+
 def print_response(response):
   """Parses and prints the Analytics Reporting API V4 response.
 
@@ -99,7 +116,10 @@ def print_response(response):
 def main():
   analytics = initialize_analyticsreporting()
   response = get_report(analytics)
-  print_response(response)
+  # print_response(response)
+  result = parse_data(response)
+  print(result)
+  result.to_csv('result.csv')
 
 if __name__ == '__main__':
   main()

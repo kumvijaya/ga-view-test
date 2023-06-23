@@ -37,3 +37,11 @@ jobs:
     - name: 'Get GA view'
       run: |
         python3 ga-view.py --view '${{ inputs.view }}' --credfile '${{ steps.gcp-auth.outputs.credentials_file_path }}'
+
+    - name: Upload Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: report
+        path: report.csv
+        retention-days: 5
+        if-no-files-found: warn
