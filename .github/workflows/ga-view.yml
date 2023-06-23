@@ -36,4 +36,4 @@ jobs:
 
     - name: 'Get GA view'
       run: |
-        python3 ga-view.py --view '${{ inputs.view }}'' --credfile '${{ steps.gcp-auth.outputs.credentials_file_path }}'
+        python3 ga-view.py --view '${{ inputs.view }}' --credfile '${{ steps.gcp-auth.outputs.credentials_file_path }}'
