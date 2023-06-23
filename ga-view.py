@@ -8,7 +8,7 @@ from pandas import json_normalize
 
 parser = argparse.ArgumentParser(
     description="""
-        Updates the GCP firewall
+        Gets the google analytics view
         Usage:
             python ga-view.py --credfile 'service_cred.json' --view '63948351' 
     """
@@ -71,6 +71,14 @@ def get_report(analytics):
 
 
 def parse_data(response):
+  """Parses the reponse.
+
+  Args:
+      response (dict): Reponse object
+
+  Returns:
+      dataframe: Pandas data frame.
+  """
 
   reports = response['reports'][0]
   columnHeader = reports['columnHeader']['dimensions']
@@ -89,34 +97,10 @@ def parse_data(response):
 
   return result
 
-def print_response(response):
-  """Parses and prints the Analytics Reporting API V4 response.
-
-  Args:
-    response: An Analytics Reporting API V4 response.
-  """
-  for report in response.get('reports', []):
-    columnHeader = report.get('columnHeader', {})
-    dimensionHeaders = columnHeader.get('dimensions', [])
-    metricHeaders = columnHeader.get('metricHeader', {}).get('metricHeaderEntries', [])
-
-    for row in report.get('data', {}).get('rows', []):
-      dimensions = row.get('dimensions', [])
-      dateRangeValues = row.get('metrics', [])
-
-      for header, dimension in zip(dimensionHeaders, dimensions):
-        print(header + ': ', dimension)
-
-      for i, values in enumerate(dateRangeValues):
-        print('Date range:', str(i))
-        for metricHeader, value in zip(metricHeaders, values.get('values')):
-          print(metricHeader.get('name') + ':', value)
-
 
 def main():
   analytics = initialize_analyticsreporting()
   response = get_report(analytics)
-  # print_response(response)
   result = parse_data(response)
   print(result)
   result.to_csv('report.csv')
