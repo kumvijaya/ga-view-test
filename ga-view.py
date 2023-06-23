@@ -119,7 +119,7 @@ def main():
   # print_response(response)
   result = parse_data(response)
   print(result)
-  result.to_csv('result.csv')
+  result.to_csv('report.csv')
 
 if __name__ == '__main__':
   main()
