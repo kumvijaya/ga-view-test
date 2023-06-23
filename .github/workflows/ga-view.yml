@@ -1,0 +1,39 @@
+name: GA View
+
+on:
+  workflow_dispatch:
+    inputs:
+      view:
+        type: string
+        description: View id
+        required: true
+        default: '63948351'
+
+jobs:
+  ga-view:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    name: ga-view
+    continue-on-error: false
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+        
+    - id: 'gcp-auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+        create_credentials_file: true
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.11' 
+    - run: pip install -r requirements.txt
+
+    - name: 'Get GA view'
+      run: |
+        python3 ga-view.py --view '${{ inputs.view }}'' --credfile '${{ steps.gcp-auth.outputs.credentials_file_path }}'
